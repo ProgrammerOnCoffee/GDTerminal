@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://ccojxcxaw6jqo"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Control" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 12.0
+offset_bottom = 12.0
+
+[node name="Control2" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 64.0
+offset_right = 76.0
+offset_bottom = 12.0
+
+[node name="Control3" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 128.0
+offset_right = 140.0
+offset_bottom = 12.0
+
+[node name="Control4" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 192.0
+offset_right = 204.0
+offset_bottom = 12.0
+
+[node name="Control5" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 256.0
+offset_right = 268.0
+offset_bottom = 12.0
+
+[node name="Control6" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 320.0
+offset_right = 332.0
+offset_bottom = 12.0
+
+[node name="Control7" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 384.0
+offset_right = 396.0
+offset_bottom = 12.0
