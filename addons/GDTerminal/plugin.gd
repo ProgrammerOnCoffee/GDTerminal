@@ -106,6 +106,8 @@ var _print_on_run := false
 var _print_execution_time := false
 ## The value of the Mark Scene as Unsaved setting.
 var _mark_unsaved := false
+## The value of the Save Scene setting.
+var _save_scene := false
 ## The value of the Expand Factor setting.
 var _expand_factor := 2.5
 
@@ -209,6 +211,7 @@ func _enter_tree() -> void:
 	settings_vbox.get_node(^"PrintOnRun").toggled.connect(seti.bind(&"_print_on_run"))
 	settings_vbox.get_node(^"PrintExecutionTime").toggled.connect(seti.bind(&"_print_execution_time"))
 	settings_vbox.get_node(^"MarkUnsaved").toggled.connect(seti.bind(&"_mark_unsaved"))
+	settings_vbox.get_node(^"SaveScene").toggled.connect(seti.bind(&"_save_scene"))
 	
 	# Expand/collapse
 	dock.get_node(^"Control").resized.connect(func() -> void:
@@ -307,6 +310,7 @@ func _enter_tree() -> void:
 			_print_on_run = config.get_value("settings", "print_on_run", _print_on_run)
 			_print_execution_time = config.get_value("settings", "print_execution_time", _print_execution_time)
 			_mark_unsaved = config.get_value("settings", "mark_unsaved", _mark_unsaved)
+			_save_scene = config.get_value("settings", "save_scene", _save_scene)
 			_expand_factor = config.get_value("settings", "expand_factor", _expand_factor)
 			
 			run_hotkey = config.get_value("hotkeys", "run_hotkey", run_hotkey)
@@ -321,6 +325,7 @@ func _enter_tree() -> void:
 	settings_vbox.get_node(^"PrintOnRun").set_pressed_no_signal(_print_on_run)
 	settings_vbox.get_node(^"PrintExecutionTime").set_pressed_no_signal(_print_execution_time)
 	settings_vbox.get_node(^"MarkUnsaved").set_pressed_no_signal(_mark_unsaved)
+	settings_vbox.get_node(^"SaveScene").set_pressed_no_signal(_save_scene)
 	settings_vbox.get_node(^"RunHotkey/Button").text = run_hotkey
 	settings_vbox.get_node(^"ExpandFactor/SpinBox").set_value_no_signal(_expand_factor)
 	settings_vbox.get_node(^"MoveToBottom").set_pressed_no_signal(_is_in_bottom_panel)
@@ -355,6 +360,7 @@ func _exit_tree() -> void:
 	config.set_value("settings", "print_on_run", _clear_on_run)
 	config.set_value("settings", "print_execution_time", _print_execution_time)
 	config.set_value("settings", "mark_scene_as_unsaved", _mark_unsaved)
+	config.set_value("settings", "save_scene", _save_scene)
 	config.set_value("settings", "expand_factor", _expand_factor)
 	
 	config.set_value("hotkeys", "run_hotkey", run_hotkey)
@@ -492,6 +498,8 @@ func run(code: String, is_saved_command := false) -> void:
 		script.source_code += '\n\tprint("\\n--- End GDTerminal Output ---\\n")'
 	if _print_execution_time:
 		script.source_code += '\n\tvar _command_end_time := Time.get_ticks_usec()\n\tprint("\\n--- Execution Time: %s ms ---\\n" % String.num((_command_end_time - _command_begin_time) * 0.001, 3).pad_decimals(3))'
+	if _save_scene:
+		script.source_code += "\n\tEditorInterface.save_scene()"
 	script.source_code += "\n\tqueue_free()"
 	script.reload()
 	#endregion Create script
@@ -504,7 +512,7 @@ func run(code: String, is_saved_command := false) -> void:
 	
 	if _clear_on_run and not is_saved_command:
 		code_edit.clear()
-	if _mark_unsaved:
+	if _mark_unsaved and not _save_scene:
 		EditorInterface.mark_scene_as_unsaved()
 
 

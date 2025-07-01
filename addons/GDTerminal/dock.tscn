@@ -101,9 +101,18 @@ text_overrun_behavior = 3
 
 [node name="MarkUnsaved" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-tooltip_text = "When enabled, GDTerminal will mark the active
-scene as unsaved when a command is run."
+tooltip_text = "When enabled, GDTerminal will mark the
+open scene as unsaved when code is run.
+
+This has no effect if Save Scene is enabled."
 text = "Mark Scene as Unsaved"
+text_overrun_behavior = 3
+
+[node name="SaveScene" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+tooltip_text = "When enabled, GDTerminal will save
+the open scene after code is run."
+text = "Save Scene"
 text_overrun_behavior = 3
 
 [node name="RunHotkey" type="HBoxContainer" parent="Control/Settings/ScrollContainer/VBoxContainer"]
