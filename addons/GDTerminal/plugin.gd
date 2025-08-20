@@ -212,6 +212,7 @@ func _enter_tree() -> void:
 	settings_vbox.get_node(^"PrintExecutionTime").toggled.connect(seti.bind(&"_print_execution_time"))
 	settings_vbox.get_node(^"MarkUnsaved").toggled.connect(seti.bind(&"_mark_unsaved"))
 	settings_vbox.get_node(^"SaveScene").toggled.connect(seti.bind(&"_save_scene"))
+	settings_vbox.get_node(^"ExpandFactor/SpinBox").value_changed.connect(seti.bind(&"_expand_factor"))
 	
 	# Expand/collapse
 	dock.get_node(^"Control").resized.connect(func() -> void:
