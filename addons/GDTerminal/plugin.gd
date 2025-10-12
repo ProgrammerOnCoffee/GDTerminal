@@ -245,7 +245,7 @@ func _enter_tree() -> void:
 	if ClassDB.can_instantiate(&"GDScriptSyntaxHighlighter"):
 		code_edit.syntax_highlighter = ClassDB.instantiate(&"GDScriptSyntaxHighlighter")
 	else:
-		# Compatability for versions < 4.4
+		# Compatibility for versions < 4.4
 		# Attempt to get a GDScriptSyntaxHighlighter from an open script editor
 		var script_editor := EditorInterface.get_script_editor()
 		for open_script_editor in script_editor.get_open_script_editors():
@@ -336,7 +336,7 @@ func _enter_tree() -> void:
 	else:
 		add_control_to_dock(_dock_slot, dock)
 		# set_dock_tab_icon was introduced in 4.3
-		# Check engine version for compatability with earlier versions
+		# Check engine version for compatibility with earlier versions
 		if Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2:
 			call(&"set_dock_tab_icon", dock, load("res://addons/GDTerminal/icon.png"))
 
@@ -542,7 +542,7 @@ func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
 		remove_control_from_bottom_panel(dock)
 		add_control_to_dock(_dock_slot, dock)
 		# set_dock_tab_icon was introduced in 4.3
-		# Check engine version for compatability with earlier versions
+		# Check engine version for compatibility with earlier versions
 		if Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2:
 			call(&"set_dock_tab_icon", dock, load("res://addons/GDTerminal/icon.png"))
 		(dock.get_parent() as TabContainer).current_tab = dock.get_index()
