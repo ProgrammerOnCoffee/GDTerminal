@@ -494,7 +494,7 @@ func add_saved_command(title: String, code: String) -> void:
 func update_dock_tab_icon() -> void:
 	# set_dock_tab_icon was introduced in 4.3
 	# Check engine version for compatibility with earlier versions
-	if Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2:
+	if not _is_in_bottom_panel and (Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2):
 		var icon := (load("res://addons/GDTerminal/icon.png") as CompressedTexture2D).get_image()
 		# Color icon to match editor theme
 		var settings := EditorInterface.get_editor_settings()
@@ -557,6 +557,7 @@ func update_theme() -> void:
 
 
 func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
+	_is_in_bottom_panel = toggled_on
 	if toggled_on:
 		var current_slot = get(StringName(dock.get_parent().name.to_snake_case().to_upper()))
 		# current_slot will be null before v4.3 because the
@@ -569,9 +570,7 @@ func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
 	else:
 		remove_control_from_bottom_panel(dock)
 		add_control_to_dock(_dock_slot, dock)
-		update_dock_tab_icon()
 		(dock.get_parent() as TabContainer).current_tab = dock.get_index()
-	_is_in_bottom_panel = toggled_on
 
 
 func _on_editor_script_changed(_script: Script) -> void:
