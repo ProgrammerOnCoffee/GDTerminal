@@ -507,7 +507,7 @@ func update_dock_tab_icon() -> void:
 				var p := icon.get_pixel(x, y)
 				p.v = v
 				icon.set_pixel(x, y, p)
-		call(&"set_dock_tab_icon", dock, ImageTexture.create_from_image(icon))
+		call_deferred(&"set_dock_tab_icon", dock, ImageTexture.create_from_image(icon))
 
 
 ## Updates the plugin dock to match the editor's theme.
