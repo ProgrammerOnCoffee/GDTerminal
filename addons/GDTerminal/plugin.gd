@@ -33,18 +33,24 @@ var run_hotkey := "Ctrl+Alt+Kp Enter"
 
 ## The [CodeEdit] that holds code.
 var code_edit: CodeEdit
+## The [Button] that toggles the settings panel when pressed.
+var settings_button: Button
 ## The [Button] that opens the list of saved commands.
 var saved_button: Button
 ## The [Button] that runs the code.
 var run_button: Button
+## The [Button] that clears [member code_edit].
+var clear_button: Button
 ## The [Button] that expands [member code_edit] when toggled.
 var expand_button: Button
+## The [Button] that moves the dock to the bottom panel.
+var bottom_button: Button
 ## The [Panel] that holds the settings window.
 var settings_panel: Panel
 ## The [VBoxContainer] that holds settings.
 var settings_vbox: VBoxContainer
 ## The editor's theme, as returned by [method EditorInterface.get_editor_theme].
-var theme := EditorInterface.get_editor_theme()
+var theme: Theme
 
 ## If [code]true[/code], the user is selecting a new run hotkey.
 var _is_selecting_new_run_hotkey := false
@@ -68,7 +74,7 @@ var _is_in_bottom_panel := false:
 			buttons.vertical = value
 			
 			var saved_panel := dock.get_node(^"Control/Saved") as Panel
-			var settings_pressed: bool = buttons.get_node(^"Settings").button_pressed
+			var settings_pressed := settings_button.button_pressed
 			var saved_pressed := saved_button.button_pressed
 			if value:
 				code_edit.anchor_left = 0.0
@@ -118,25 +124,12 @@ func _enter_tree() -> void:
 	settings_panel = dock.get_node(^"Control/Settings") as Panel
 	settings_vbox = settings_panel.get_node(^"ScrollContainer/VBoxContainer") as VBoxContainer
 	var buttons := dock.get_node(^"Buttons") as BoxContainer
-	## The [Button] that toggles the settings panel when pressed.
-	var settings_button := buttons.get_node(^"Settings") as Button
+	settings_button = buttons.get_node(^"Settings") as Button
 	saved_button = buttons.get_node(^"Saved") as Button
 	run_button = buttons.get_node(^"Run")
-	## The [Button] that clears [member code_edit].
-	var clear_button := buttons.get_node(^"Clear") as Button
+	clear_button = buttons.get_node(^"Clear") as Button
 	expand_button = buttons.get_node(^"Expand") as Button
-	## The [Button] that moves the dock to the bottom panel.
-	var bottom_button := settings_vbox.get_node(^"MoveToBottom") as Button
-	
-	# Set button icons
-	run_button.icon = theme.get_icon(&"Play", &"EditorIcons")
-	saved_button.icon = theme.get_icon(&"Save", &"EditorIcons")
-	clear_button.icon = theme.get_icon(&"Clear", &"EditorIcons")
-	expand_button.icon = theme.get_icon(&"MoveRight", &"EditorIcons")
-	settings_button.icon = theme.get_icon(&"GDScript", &"EditorIcons")
-	run_button.get_child(0).self_modulate = theme.get_color(&"accent_color", &"Editor")
-	bottom_button.icon = theme.get_icon(&"ControlAlignBottomWide", &"EditorIcons")
-	bottom_button.toggled.connect(_on_move_to_bottom_toggled)
+	bottom_button = settings_vbox.get_node(^"MoveToBottom") as Button
 	
 	saved_button.toggled.connect(func(toggled_on: bool) -> void:
 		if toggled_on:
@@ -213,6 +206,7 @@ func _enter_tree() -> void:
 	settings_vbox.get_node(^"MarkUnsaved").toggled.connect(seti.bind(&"_mark_unsaved"))
 	settings_vbox.get_node(^"SaveScene").toggled.connect(seti.bind(&"_save_scene"))
 	settings_vbox.get_node(^"ExpandFactor/SpinBox").value_changed.connect(seti.bind(&"_expand_factor"))
+	bottom_button.toggled.connect(_on_move_to_bottom_toggled)
 	
 	# Expand/collapse
 	dock.get_node(^"Control").resized.connect(func() -> void:
@@ -258,37 +252,6 @@ func _enter_tree() -> void:
 		if not code_edit.syntax_highlighter:
 			script_editor.editor_script_changed.connect(_on_editor_script_changed)
 	
-	#region Adjust to theme
-	# Adjust CodeEdit based on user's script editor settings
-	var editor_settings := EditorInterface.get_editor_settings()
-	code_edit.caret_type = editor_settings.get_setting(
-			"text_editor/appearance/caret/type")
-	code_edit.caret_blink = editor_settings.get_setting(
-			"text_editor/appearance/caret/caret_blink")
-	code_edit.caret_blink_interval = editor_settings.get_setting(
-			"text_editor/appearance/caret/caret_blink_interval")
-	code_edit.caret_move_on_right_click = editor_settings.get_setting(
-			"text_editor/behavior/navigation/move_caret_on_right_click")
-	code_edit.draw_tabs = editor_settings.get_setting(
-			"text_editor/appearance/whitespace/draw_tabs")
-	code_edit.draw_spaces = editor_settings.get_setting(
-			"text_editor/appearance/whitespace/draw_spaces")
-	code_edit.gutters_zero_pad_line_numbers = editor_settings.get_setting(
-			"text_editor/appearance/gutters/line_numbers_zero_padded")
-	code_edit.highlight_current_line = editor_settings.get_setting(
-			"text_editor/appearance/caret/highlight_current_line")
-	code_edit.highlight_all_occurrences = editor_settings.get_setting(
-			"text_editor/appearance/caret/highlight_all_occurrences")
-	code_edit.auto_brace_completion_enabled = editor_settings.get_setting(
-			"text_editor/completion/auto_brace_complete")
-	code_edit.add_theme_font_size_override(&"font_size",
-			editor_settings.get_setting("interface/editor/code_font_size"))
-	code_edit.add_theme_color_override(&"font_color",
-			editor_settings.get_setting("text_editor/theme/highlighting/text_color"))
-	code_edit.add_theme_color_override(&"caret_color",
-			editor_settings.get_setting("text_editor/theme/highlighting/caret_color"))
-	#endregion Adjust to theme
-	
 	run_button.pressed.connect(func() -> void:
 		run(code_edit.text))
 	clear_button.pressed.connect(code_edit.clear)
@@ -329,16 +292,15 @@ func _enter_tree() -> void:
 	settings_vbox.get_node(^"SaveScene").set_pressed_no_signal(_save_scene)
 	settings_vbox.get_node(^"RunHotkey/Button").text = run_hotkey
 	settings_vbox.get_node(^"ExpandFactor/SpinBox").set_value_no_signal(_expand_factor)
-	settings_vbox.get_node(^"MoveToBottom").set_pressed_no_signal(_is_in_bottom_panel)
+	bottom_button.set_pressed_no_signal(_is_in_bottom_panel)
 	
 	if _is_in_bottom_panel:
 		add_control_to_bottom_panel(dock, "GDTerminal")
 	else:
 		add_control_to_dock(_dock_slot, dock)
-		# set_dock_tab_icon was introduced in 4.3
-		# Check engine version for compatibility with earlier versions
-		if Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2:
-			call(&"set_dock_tab_icon", dock, load("res://addons/GDTerminal/icon.png"))
+	
+	update_theme()
+	dock.theme_changed.connect(update_theme)
 
 
 func _exit_tree() -> void:
@@ -528,6 +490,72 @@ func add_saved_command(title: String, code: String) -> void:
 	dock.get_node(^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer").add_child(command)
 
 
+## Sets the plugin dock tab icon after coloring it to match the editor's theme.
+func update_dock_tab_icon() -> void:
+	# set_dock_tab_icon was introduced in 4.3
+	# Check engine version for compatibility with earlier versions
+	if Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2:
+		var icon := (load("res://addons/GDTerminal/icon.png") as CompressedTexture2D).get_image()
+		# Color icon to match editor theme
+		var settings := EditorInterface.get_editor_settings()
+		var color_scheme := settings.get_setting("interface/theme/icon_and_font_color")
+		var v := (224 if color_scheme == 2
+				or (color_scheme == 0 and settings.get_setting("interface/theme/base_color").get_luminance() < 0.5)
+				else 90) / 255.0
+		for x in icon.get_width():
+			for y in icon.get_height():
+				var p := icon.get_pixel(x, y)
+				p.v = v
+				icon.set_pixel(x, y, p)
+		call(&"set_dock_tab_icon", dock, ImageTexture.create_from_image(icon))
+
+
+## Updates the plugin dock to match the editor's theme.
+func update_theme() -> void:
+	theme = EditorInterface.get_editor_theme()
+	SavedCommand.editor_theme = theme
+	
+	# Set button icons
+	settings_button.icon = theme.get_icon(&"GDScript", &"EditorIcons")
+	saved_button.icon = theme.get_icon(&"Save", &"EditorIcons")
+	run_button.icon = theme.get_icon(&"Play", &"EditorIcons")
+	clear_button.icon = theme.get_icon(&"Clear", &"EditorIcons")
+	expand_button.icon = theme.get_icon(&"MoveRight", &"EditorIcons")
+	run_button.get_child(0).self_modulate = theme.get_color(&"accent_color", &"Editor")
+	bottom_button.icon = theme.get_icon(&"ControlAlignBottomWide", &"EditorIcons")
+	
+	# Adjust CodeEdit based on user's script editor settings
+	var editor_settings := EditorInterface.get_editor_settings()
+	code_edit.caret_type = editor_settings.get_setting(
+			"text_editor/appearance/caret/type")
+	code_edit.caret_blink = editor_settings.get_setting(
+			"text_editor/appearance/caret/caret_blink")
+	code_edit.caret_blink_interval = editor_settings.get_setting(
+			"text_editor/appearance/caret/caret_blink_interval")
+	code_edit.caret_move_on_right_click = editor_settings.get_setting(
+			"text_editor/behavior/navigation/move_caret_on_right_click")
+	code_edit.draw_tabs = editor_settings.get_setting(
+			"text_editor/appearance/whitespace/draw_tabs")
+	code_edit.draw_spaces = editor_settings.get_setting(
+			"text_editor/appearance/whitespace/draw_spaces")
+	code_edit.gutters_zero_pad_line_numbers = editor_settings.get_setting(
+			"text_editor/appearance/gutters/line_numbers_zero_padded")
+	code_edit.highlight_current_line = editor_settings.get_setting(
+			"text_editor/appearance/caret/highlight_current_line")
+	code_edit.highlight_all_occurrences = editor_settings.get_setting(
+			"text_editor/appearance/caret/highlight_all_occurrences")
+	code_edit.auto_brace_completion_enabled = editor_settings.get_setting(
+			"text_editor/completion/auto_brace_complete")
+	code_edit.add_theme_font_size_override(&"font_size",
+			editor_settings.get_setting("interface/editor/code_font_size"))
+	code_edit.add_theme_color_override(&"font_color",
+			editor_settings.get_setting("text_editor/theme/highlighting/text_color"))
+	code_edit.add_theme_color_override(&"caret_color",
+			editor_settings.get_setting("text_editor/theme/highlighting/caret_color"))
+	
+	update_dock_tab_icon()
+
+
 func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
 	if toggled_on:
 		var current_slot = get(StringName(dock.get_parent().name.to_snake_case().to_upper()))
@@ -541,10 +569,7 @@ func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
 	else:
 		remove_control_from_bottom_panel(dock)
 		add_control_to_dock(_dock_slot, dock)
-		# set_dock_tab_icon was introduced in 4.3
-		# Check engine version for compatibility with earlier versions
-		if Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2:
-			call(&"set_dock_tab_icon", dock, load("res://addons/GDTerminal/icon.png"))
+		update_dock_tab_icon()
 		(dock.get_parent() as TabContainer).current_tab = dock.get_index()
 	_is_in_bottom_panel = toggled_on
 
@@ -564,7 +589,7 @@ class SavedCommand:
 	extends HBoxContainer
 	
 	## The editor's theme, as returned by [method EditorInterface.get_editor_theme].
-	static var editor_theme := EditorInterface.get_editor_theme()
+	static var editor_theme: Theme
 	
 	## The [LineEdit] that hoolds the command's name.
 	var line_edit := LineEdit.new()
@@ -587,16 +612,21 @@ class SavedCommand:
 		line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		line_edit.text = title
 		add_child(line_edit)
-		run_button.icon = editor_theme.get_icon(&"Play", &"EditorIcons")
 		run_button.tooltip_text = "Run this command."
 		add_child(run_button)
-		load_button.icon = editor_theme.get_icon(&"Load", &"EditorIcons")
 		load_button.tooltip_text = "Load this command into CodeEdit.\nExisting code will be cleared."
 		add_child(load_button)
-		delete_button.icon = editor_theme.get_icon(&"Remove", &"EditorIcons")
 		delete_button.tooltip_text = "Delete this command."
 		delete_button.pressed.connect(_on_delete_pressed)
 		add_child(delete_button)
+		
+		theme_changed.connect(update_icons)
+	
+	
+	func update_icons() -> void:
+		run_button.icon = editor_theme.get_icon(&"Play", &"EditorIcons")
+		load_button.icon = editor_theme.get_icon(&"Load", &"EditorIcons")
+		delete_button.icon = editor_theme.get_icon(&"Remove", &"EditorIcons")
 	
 	
 	func _on_delete_pressed() -> void:
