@@ -588,7 +588,7 @@ class SavedCommand:
 	extends HBoxContainer
 	
 	## The editor's theme, as returned by [method EditorInterface.get_editor_theme].
-	static var editor_theme: Theme
+	static var editor_theme := EditorInterface.get_editor_theme()
 	
 	## The [LineEdit] that hoolds the command's name.
 	var line_edit := LineEdit.new()
