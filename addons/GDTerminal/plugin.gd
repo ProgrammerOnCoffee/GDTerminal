@@ -494,7 +494,7 @@ func add_saved_command(title: String, code: String) -> void:
 func update_dock_tab_icon() -> void:
 	# set_dock_tab_icon was introduced in 4.3
 	# Check engine version for compatibility with earlier versions
-	if not _is_in_bottom_panel and (Engine.get_version_info().major > 4 or Engine.get_version_info().minor > 2):
+	if not _is_in_bottom_panel and Engine.get_version_info().hex >= 0x040300:
 		var icon := (load("res://addons/GDTerminal/icon.png") as CompressedTexture2D).get_image()
 		# Color icon to match editor theme
 		var settings := EditorInterface.get_editor_settings()
