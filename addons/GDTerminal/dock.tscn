@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dlc45f0gthetl"]
+[gd_scene format=3 uid="uid://dlc45f0gthetl"]
 
 [sub_resource type="InputEventKey" id="InputEventKey_0imsi"]
 device = -1
@@ -17,7 +17,7 @@ colors = PackedColorArray(0.439216, 0.729412, 0.980392, 0, 1, 1, 1, 1, 0.439216,
 gradient = SubResource("Gradient_gou6x")
 width = 16
 
-[node name="GDTerminal" type="BoxContainer"]
+[node name="GDTerminal" type="BoxContainer" unique_id=1850407607]
 clip_contents = true
 custom_minimum_size = Vector2(0, 256)
 anchors_preset = 15
@@ -27,13 +27,13 @@ grow_horizontal = 2
 grow_vertical = 2
 vertical = true
 
-[node name="Control" type="Control" parent="."]
+[node name="Control" type="Control" parent="." unique_id=1883326781]
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="CodeEdit" type="CodeEdit" parent="Control"]
+[node name="CodeEdit" type="CodeEdit" parent="Control" unique_id=2023034575]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,7 +45,7 @@ delimiter_comments = Array[String](["#"])
 indent_automatic = true
 auto_brace_completion_highlight_matching = true
 
-[node name="Settings" type="Panel" parent="Control"]
+[node name="Settings" type="Panel" parent="Control" unique_id=1796156744]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = -1
@@ -54,7 +54,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Control/Settings"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Control/Settings" unique_id=1432852010]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -63,43 +63,43 @@ grow_horizontal = 2
 grow_vertical = 2
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Settings/ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Settings/ScrollContainer" unique_id=977838288]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=825586630]
 layout_mode = 2
 theme_type_variation = &"HeaderLarge"
 text = "Settings"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=2021366681]
 layout_mode = 2
 
-[node name="ClearOnRun" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="ClearOnRun" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=607190519]
 layout_mode = 2
 tooltip_text = "When enabled, the CodeEdit
 will be cleared after code is run."
 text = "Clear on Run"
 text_overrun_behavior = 3
 
-[node name="PrintOnRun" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="PrintOnRun" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=204849712]
 layout_mode = 2
 tooltip_text = "When enabled, statements will be
 printed before and after running code."
 text = "Print on Run"
 text_overrun_behavior = 3
 
-[node name="PrintExecutionTime" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="PrintExecutionTime" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=1963911677]
 layout_mode = 2
 tooltip_text = "When enabled, the time that code
 takes to execute will be printed."
 text = "Print Execution Time"
 text_overrun_behavior = 3
 
-[node name="MarkUnsaved" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="MarkUnsaved" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=1701069411]
 layout_mode = 2
 tooltip_text = "When enabled, GDTerminal will mark the
 open scene as unsaved when code is run.
@@ -108,14 +108,14 @@ This has no effect if Save Scene is enabled."
 text = "Mark Scene as Unsaved"
 text_overrun_behavior = 3
 
-[node name="SaveScene" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="SaveScene" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=674771150]
 layout_mode = 2
 tooltip_text = "When enabled, GDTerminal will save
 the open scene after code is run."
 text = "Save Scene"
 text_overrun_behavior = 3
 
-[node name="RunHotkey" type="HBoxContainer" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="RunHotkey" type="HBoxContainer" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=434530465]
 layout_mode = 2
 tooltip_text = "The hotkey to run code.
 
@@ -125,45 +125,45 @@ To change:
 3. Move your mouse outside of the button."
 theme_override_constants/separation = 0
 
-[node name="LSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey"]
+[node name="LSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey" unique_id=1888582723]
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 
-[node name="Label" type="Label" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey"]
+[node name="Label" type="Label" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey" unique_id=2053231733]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Run Hotkey"
 text_overrun_behavior = 3
 
-[node name="Button" type="Button" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey"]
+[node name="Button" type="Button" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey" unique_id=1447914893]
 custom_minimum_size = Vector2(16, 0)
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="RSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey"]
+[node name="RSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey" unique_id=1583123988]
 custom_minimum_size = Vector2(7, 0)
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="ExpandFactor" type="HBoxContainer" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="ExpandFactor" type="HBoxContainer" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=895591288]
 layout_mode = 2
 tooltip_text = "How much the CodeEdit will be
 expanded when expand is toggled."
 theme_override_constants/separation = 0
 
-[node name="LSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor"]
+[node name="LSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor" unique_id=1935425202]
 custom_minimum_size = Vector2(2, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 
-[node name="Label" type="Label" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor"]
+[node name="Label" type="Label" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor" unique_id=513733933]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Expand Factor"
 text_overrun_behavior = 3
 
-[node name="SpinBox" type="SpinBox" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor"]
+[node name="SpinBox" type="SpinBox" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor" unique_id=335483240]
 layout_mode = 2
 min_value = 2.0
 max_value = 5.0
@@ -172,18 +172,18 @@ value = 2.0
 alignment = 1
 suffix = "x"
 
-[node name="RSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor"]
+[node name="RSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor" unique_id=533973992]
 custom_minimum_size = Vector2(7, 0)
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="MoveToBottom" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer"]
+[node name="MoveToBottom" type="CheckButton" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=1678853491]
 layout_mode = 2
 tooltip_text = "Move this dock to the bottom panel."
 text = "Move to Bottom"
 alignment = 1
 
-[node name="Saved" type="Panel" parent="Control"]
+[node name="Saved" type="Panel" parent="Control" unique_id=1692841871]
 modulate = Color(1, 1, 1, 0.5)
 layout_mode = 1
 anchors_preset = -1
@@ -192,7 +192,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Saved"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Saved" unique_id=1929579356]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -200,50 +200,50 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="Control/Saved/VBoxContainer"]
+[node name="Label" type="Label" parent="Control/Saved/VBoxContainer" unique_id=1277724604]
 layout_mode = 2
 theme_type_variation = &"HeaderLarge"
 text = "Saved Commands"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="Control/Saved/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="Control/Saved/VBoxContainer" unique_id=843638932]
 layout_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Control/Saved/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Control/Saved/VBoxContainer" unique_id=552648393]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Saved/VBoxContainer/ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Saved/VBoxContainer/ScrollContainer" unique_id=1394696724]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="HSeparator2" type="HSeparator" parent="Control/Saved/VBoxContainer"]
+[node name="HSeparator2" type="HSeparator" parent="Control/Saved/VBoxContainer" unique_id=97009654]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="Control/Saved/VBoxContainer"]
+[node name="Button" type="Button" parent="Control/Saved/VBoxContainer" unique_id=1588017343]
 layout_mode = 2
 tooltip_text = "Add the current command to
 the list of saved commands."
 text = "Add Current Command"
 
-[node name="Buttons" type="BoxContainer" parent="."]
+[node name="Buttons" type="BoxContainer" parent="." unique_id=757288428]
 layout_mode = 2
 alignment = 1
 
-[node name="Settings" type="Button" parent="Buttons"]
+[node name="Settings" type="Button" parent="Buttons" unique_id=1386506677]
 layout_mode = 2
 tooltip_text = "Settings"
 toggle_mode = true
 
-[node name="Saved" type="Button" parent="Buttons"]
+[node name="Saved" type="Button" parent="Buttons" unique_id=411641626]
 layout_mode = 2
 tooltip_text = "Saved Commands"
 toggle_mode = true
 
-[node name="Run" type="Button" parent="Buttons"]
+[node name="Run" type="Button" parent="Buttons" unique_id=251752954]
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Runs the code currently in the CodeEdit.
@@ -255,7 +255,7 @@ to a new node parented to the editor's SceneTree."
 shortcut = SubResource("Shortcut_ab7yo")
 text = "Run"
 
-[node name="TextureRect" type="TextureRect" parent="Buttons/Run"]
+[node name="TextureRect" type="TextureRect" parent="Buttons/Run" unique_id=960716138]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -266,11 +266,11 @@ grow_vertical = 2
 texture = SubResource("GradientTexture1D_i1jbc")
 expand_mode = 2
 
-[node name="Clear" type="Button" parent="Buttons"]
+[node name="Clear" type="Button" parent="Buttons" unique_id=711422743]
 layout_mode = 2
 tooltip_text = "Clear"
 
-[node name="Expand" type="Button" parent="Buttons"]
+[node name="Expand" type="Button" parent="Buttons" unique_id=2086010816]
 layout_mode = 2
 tooltip_text = "Expand"
 toggle_mode = true
