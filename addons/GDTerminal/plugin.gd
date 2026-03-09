@@ -2,7 +2,7 @@
 # ##                        This file is part of GDTerminal.                        ##
 # ##                https://github.com/ProgrammerOnCoffee/GDTerminal                ##
 # ####################################################################################
-# ## Copyright (c) 2025 ProgrammerOnCoffee.                                         ##
+# ## Copyright (c) 2025-2026 ProgrammerOnCoffee.                                    ##
 # ##                                                                                ##
 # ## Permission is hereby granted, free of charge, to any person obtaining a copy   ##
 # ## of this software and associated documentation files (the "Software"), to deal  ##
