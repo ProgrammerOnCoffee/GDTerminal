@@ -30,6 +30,8 @@ extends EditorPlugin
 var dock: BoxContainer
 ## The run hotkey, as returned by [method InputEvent.as_text].
 var run_hotkey := "Ctrl+Alt+Kp Enter"
+## The [EditorInterface] singleton.
+var editor_interface := EditorInterface if Engine.get_version_info().hex >= 0x040200 else get_editor_interface()
 
 ## The [CodeEdit] that holds code.
 var code_edit: CodeEdit
@@ -49,8 +51,6 @@ var bottom_button: Button
 var settings_panel: Panel
 ## The [VBoxContainer] that holds settings.
 var settings_vbox: VBoxContainer
-## The editor's theme, as returned by [method EditorInterface.get_editor_theme].
-var theme: Theme
 
 ## If [code]true[/code], the user is selecting a new run hotkey.
 var _is_selecting_new_run_hotkey := false
@@ -64,7 +64,7 @@ var _is_in_bottom_panel := false:
 		if value != _is_in_bottom_panel:
 			dock.custom_minimum_size.y = 192.0 if value else 256.0
 			dock.vertical = not value
-			code_edit.gutters_draw_line_numbers = value and EditorInterface.get_editor_settings().get_setting(
+			code_edit.gutters_draw_line_numbers = value and editor_interface.get_editor_settings().get_setting(
 					"text_editor/appearance/gutters/show_line_numbers")
 			run_button.text = "" if value else "Run"
 			run_button.size_flags_horizontal = Control.SIZE_EXPAND if value else Control.SIZE_EXPAND_FILL
@@ -158,7 +158,8 @@ func _enter_tree() -> void:
 			expand_button.disabled = false
 			settings_button.disabled = false
 			for command in saved_panel.get_node(
-					^"VBoxContainer/ScrollContainer/VBoxContainer").get_children():
+					^"VBoxContainer/ScrollContainer/VBoxContainer"
+					).get_children() as Array[SavedCommand]:
 				if command.is_deleted:
 					command.queue_free()
 	)
@@ -222,11 +223,11 @@ func _enter_tree() -> void:
 			code_edit.top_level = true
 			create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).tween_property(
 					code_edit, ^":size:x", settings_panel.size.x * _expand_factor, 0.5)
-			expand_button.icon = theme.get_icon(&"MoveLeft", &"EditorIcons")
+			expand_button.icon = dock.get_theme_icon(&"MoveLeft", &"EditorIcons")
 			expand_button.tooltip_text = "Collapse the CodeEdit."
 		else:
 			expand_button.tooltip_text = "Expand the CodeEdit."
-			expand_button.icon = theme.get_icon(&"MoveRight", &"EditorIcons")
+			expand_button.icon = dock.get_theme_icon(&"MoveRight", &"EditorIcons")
 			await create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).tween_property(
 					code_edit, ^":size", settings_panel.size, 0.5).finished
 			code_edit.top_level = false
@@ -241,7 +242,7 @@ func _enter_tree() -> void:
 	else:
 		# Compatibility for versions < 4.4
 		# Attempt to get a GDScriptSyntaxHighlighter from an open script editor
-		var script_editor := EditorInterface.get_script_editor()
+		var script_editor := editor_interface.get_script_editor()
 		for open_script_editor in script_editor.get_open_script_editors():
 			# Get the open script editor's syntax highlighter
 			var syntax_highlighter: SyntaxHighlighter = open_script_editor.get_base_editor().syntax_highlighter
@@ -313,8 +314,9 @@ func _exit_tree() -> void:
 	var config := ConfigFile.new()
 	config.set_value("data", "command", code_edit.text)
 	var saved_commands := []
-	for command: SavedCommand in dock.get_node(
-			^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer").get_children():
+	for command in dock.get_node(
+			^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer"
+			).get_children() as Array[SavedCommand]:
 		saved_commands.append([command.line_edit.text, command.code])
 	config.set_value("data", "saved_commands", saved_commands)
 	config.set_value("data", "is_in_bottom", _is_in_bottom_panel)
@@ -412,11 +414,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 ## Runs [param code].
 func run(code: String, is_saved_command := false) -> void:
-	if not code:
+	if code == "":
 		return
 	
 	# If a scene is open, run code under the scene's root node.
-	var root := EditorInterface.get_edited_scene_root()
+	var root := editor_interface.get_edited_scene_root()
 	if not root:
 		# Otherwise, run code under the root window.
 		root = get_tree().get_root()
@@ -448,8 +450,9 @@ func run(code: String, is_saved_command := false) -> void:
 	
 	# Add prefix if one exists
 	var prefix: String
-	for command: SavedCommand in dock.get_node(
-			^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer").get_children():
+	for command in dock.get_node(
+			^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer"
+			).get_children() as Array[SavedCommand]:
 		if command.line_edit.text == "Prefix":
 			prefix = command.code
 			break
@@ -476,7 +479,7 @@ func run(code: String, is_saved_command := false) -> void:
 	if _clear_on_run and not is_saved_command:
 		code_edit.clear()
 	if _mark_unsaved and not _save_scene:
-		EditorInterface.mark_scene_as_unsaved()
+		editor_interface.mark_scene_as_unsaved()
 
 
 ## Adds a command to the saved commands list.
@@ -497,7 +500,7 @@ func update_dock_tab_icon() -> void:
 	if not _is_in_bottom_panel and Engine.get_version_info().hex >= 0x040300:
 		var icon := (load("res://addons/GDTerminal/icon.png") as CompressedTexture2D).get_image()
 		# Color icon to match editor theme
-		var settings := EditorInterface.get_editor_settings()
+		var settings := editor_interface.get_editor_settings()
 		var color_scheme := settings.get_setting("interface/theme/icon_and_font_color")
 		var v := (224 if color_scheme == 2
 				or (color_scheme == 0 and settings.get_setting("interface/theme/base_color").get_luminance() < 0.5)
@@ -512,20 +515,17 @@ func update_dock_tab_icon() -> void:
 
 ## Updates the plugin dock to match the editor's theme.
 func update_theme() -> void:
-	theme = EditorInterface.get_editor_theme()
-	SavedCommand.editor_theme = theme
-	
 	# Set button icons
-	settings_button.icon = theme.get_icon(&"GDScript", &"EditorIcons")
-	saved_button.icon = theme.get_icon(&"Save", &"EditorIcons")
-	run_button.icon = theme.get_icon(&"Play", &"EditorIcons")
-	clear_button.icon = theme.get_icon(&"Clear", &"EditorIcons")
-	expand_button.icon = theme.get_icon(&"MoveRight", &"EditorIcons")
-	run_button.get_child(0).self_modulate = theme.get_color(&"accent_color", &"Editor")
-	bottom_button.icon = theme.get_icon(&"ControlAlignBottomWide", &"EditorIcons")
+	settings_button.icon = dock.get_theme_icon(&"GDScript", &"EditorIcons")
+	saved_button.icon = dock.get_theme_icon(&"Save", &"EditorIcons")
+	run_button.icon = dock.get_theme_icon(&"Play", &"EditorIcons")
+	clear_button.icon = dock.get_theme_icon(&"Clear", &"EditorIcons")
+	expand_button.icon = dock.get_theme_icon(&"MoveRight", &"EditorIcons")
+	run_button.get_child(0).self_modulate = dock.get_theme_color(&"accent_color", &"Editor")
+	bottom_button.icon = dock.get_theme_icon(&"ControlAlignBottomWide", &"EditorIcons")
 	
 	# Adjust CodeEdit based on user's script editor settings
-	var editor_settings := EditorInterface.get_editor_settings()
+	var editor_settings := editor_interface.get_editor_settings()
 	code_edit.caret_type = editor_settings.get_setting(
 			"text_editor/appearance/caret/type")
 	code_edit.caret_blink = editor_settings.get_setting(
@@ -574,7 +574,7 @@ func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
 
 
 func _on_editor_script_changed(_script: Script) -> void:
-	var script_editor := EditorInterface.get_script_editor()
+	var script_editor := editor_interface.get_script_editor()
 	var base_editor := script_editor.get_current_editor().get_base_editor() as CodeEdit
 	if base_editor:
 		var syntax_highlighter := base_editor.syntax_highlighter
@@ -586,9 +586,6 @@ func _on_editor_script_changed(_script: Script) -> void:
 ## Represents a saved command in the saved commands screen.
 class SavedCommand:
 	extends HBoxContainer
-	
-	## The editor's theme, as returned by [method EditorInterface.get_editor_theme].
-	static var editor_theme := EditorInterface.get_editor_theme()
 	
 	## The [LineEdit] that hoolds the command's name.
 	var line_edit := LineEdit.new()
@@ -623,9 +620,9 @@ class SavedCommand:
 	
 	
 	func update_icons() -> void:
-		run_button.icon = editor_theme.get_icon(&"Play", &"EditorIcons")
-		load_button.icon = editor_theme.get_icon(&"Load", &"EditorIcons")
-		delete_button.icon = editor_theme.get_icon(&"Remove", &"EditorIcons")
+		run_button.icon = get_theme_icon(&"Play", &"EditorIcons")
+		load_button.icon = get_theme_icon(&"Load", &"EditorIcons")
+		delete_button.icon = get_theme_icon(&"Remove", &"EditorIcons")
 	
 	
 	func _on_delete_pressed() -> void:
@@ -634,12 +631,12 @@ class SavedCommand:
 			line_edit.editable = true
 			run_button.disabled = false
 			load_button.disabled = false
-			delete_button.icon = editor_theme.get_icon(&"Remove", &"EditorIcons")
+			delete_button.icon = get_theme_icon(&"Remove", &"EditorIcons")
 			delete_button.tooltip_text = "Delete this command."
 		else:
 			is_deleted = true
 			line_edit.editable = false
 			run_button.disabled = true
 			load_button.disabled = true
-			delete_button.icon = editor_theme.get_icon(&"UndoRedo", &"EditorIcons")
+			delete_button.icon = get_theme_icon(&"UndoRedo", &"EditorIcons")
 			delete_button.tooltip_text = "Recover this command."
