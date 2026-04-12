@@ -639,19 +639,38 @@ func _on_saved_command_menu_button_toggled(toggled_on: bool, command: SavedComma
 
 func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
 	_is_in_bottom_panel = toggled_on
-	if toggled_on:
-		var current_slot = get(StringName(dock.get_parent().name.to_snake_case().to_upper()))
-		# current_slot will be null before v4.3 because the
-		# dock parent's name will not equal the dock slot
-		if current_slot:
-			_dock_slot = current_slot
-		remove_control_from_docks(dock)
-		add_control_to_bottom_panel(dock, "GDTerminal")
-		make_bottom_panel_item_visible.call_deferred(dock)
+	# Editor docks were reworked in 4.6 (GH-106503)
+	if Engine.get_version_info().hex >= 0x040600:
+		var editor_dock := dock.get_parent()
+		if toggled_on:
+			var current_slot = get(StringName(editor_dock.get_parent().name.to_snake_case().to_upper()))
+			# current_slot will be null when the dock is floating, as well as in versions
+			# before v4.3 because the dock's parent's name will not equal the dock slot
+			if current_slot:
+				_dock_slot = current_slot
+			remove_dock(editor_dock)
+			editor_dock.default_slot = 8
+			add_dock(editor_dock)
+			make_bottom_panel_item_visible.call_deferred(dock)
+		else:
+			remove_dock(editor_dock)
+			editor_dock.default_slot = _dock_slot
+			add_dock(editor_dock)
+			(editor_dock.get_parent() as TabContainer).current_tab = editor_dock.get_index()
 	else:
-		remove_control_from_bottom_panel(dock)
-		add_control_to_dock(_dock_slot, dock)
-		(dock.get_parent() as TabContainer).current_tab = dock.get_index()
+		if toggled_on:
+			var current_slot = get(StringName(dock.get_parent().name.to_snake_case().to_upper()))
+			# current_slot will be null when the dock is floating, as well as in versions
+			# before v4.3 because the dock's parent's name will not equal the dock slot
+			if current_slot:
+				_dock_slot = current_slot
+			remove_control_from_docks(dock)
+			add_control_to_bottom_panel(dock, "GDTerminal")
+			make_bottom_panel_item_visible.call_deferred(dock)
+		else:
+			remove_control_from_bottom_panel(dock)
+			add_control_to_dock(_dock_slot, dock)
+			(dock.get_parent() as TabContainer).current_tab = dock.get_index()
 
 
 func _on_editor_script_changed(_script: Script) -> void:
