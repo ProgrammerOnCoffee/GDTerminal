@@ -220,6 +220,34 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
+[node name="Actions" type="HBoxContainer" parent="Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer" unique_id=821422163]
+visible = false
+layout_mode = 2
+
+[node name="MoveUp" type="Button" parent="Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer/Actions" unique_id=663774358]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Move Up"
+icon_alignment = 1
+
+[node name="MoveDown" type="Button" parent="Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer/Actions" unique_id=1207334703]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Move Down"
+icon_alignment = 1
+
+[node name="Load" type="Button" parent="Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer/Actions" unique_id=362923333]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Load"
+icon_alignment = 1
+
+[node name="Delete" type="Button" parent="Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer/Actions" unique_id=2120483162]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Delete"
+icon_alignment = 1
+
 [node name="HSeparator2" type="HSeparator" parent="Control/Saved/VBoxContainer" unique_id=97009654]
 layout_mode = 2
 

@@ -30,6 +30,12 @@ extends EditorPlugin
 var dock: BoxContainer
 ## The run hotkey, as returned by [method InputEvent.as_text].
 var run_hotkey := "Ctrl+Alt+Kp Enter"
+## The array of [SavedCommand]s.
+var saved_commands: Array[SavedCommand]
+## The currently expanded [SavedCommand].
+var expanded_command: SavedCommand
+## The [ButtonGroup] used for [SavedCommand]s' menu buttons.
+var saved_command_button_group := ButtonGroup.new()
 ## The [EditorInterface] singleton.
 var editor_interface := EditorInterface if Engine.get_version_info().hex >= 0x040200 else get_editor_interface()
 
@@ -37,6 +43,8 @@ var editor_interface := EditorInterface if Engine.get_version_info().hex >= 0x04
 var code_edit: CodeEdit
 ## The [Button] that toggles the settings panel when pressed.
 var settings_button: Button
+## The [HBoxContainer] that holds [Button]s related to [SavedCommand]s.
+var actions: HBoxContainer
 ## The [Button] that opens the list of saved commands.
 var saved_button: Button
 ## The [Button] that runs the code.
@@ -119,10 +127,12 @@ var _expand_factor := 2.5
 
 
 func _enter_tree() -> void:
+	saved_command_button_group.allow_unpress = true
 	dock = load("res://addons/GDTerminal/dock.tscn").instantiate()
 	code_edit = dock.get_node(^"Control/CodeEdit") as CodeEdit
 	settings_panel = dock.get_node(^"Control/Settings") as Panel
 	settings_vbox = settings_panel.get_node(^"ScrollContainer/VBoxContainer") as VBoxContainer
+	actions = dock.get_node(^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer/Actions") as HBoxContainer
 	var buttons := dock.get_node(^"Buttons") as BoxContainer
 	settings_button = buttons.get_node(^"Settings") as Button
 	saved_button = buttons.get_node(^"Saved") as Button
@@ -157,10 +167,11 @@ func _enter_tree() -> void:
 			clear_button.disabled = false
 			expand_button.disabled = false
 			settings_button.disabled = false
-			for command in saved_panel.get_node(
-					^"VBoxContainer/ScrollContainer/VBoxContainer"
-					).get_children() as Array[SavedCommand]:
+			if actions.visible:
+				saved_command_button_group.get_pressed_button().button_pressed = false
+			for command in saved_commands.duplicate():
 				if command.is_deleted:
+					saved_commands.erase(command)
 					command.queue_free()
 	)
 	settings_button.toggled.connect(func(toggled_on: bool) -> void:
@@ -196,6 +207,50 @@ func _enter_tree() -> void:
 		_is_selecting_new_run_hotkey = false
 		run_button.disabled = false
 		button.text = run_hotkey
+	)
+	
+	actions.get_node(^"MoveUp").pressed.connect(func() -> void:
+		var i := saved_commands.find(expanded_command)
+		if i > 0:
+			expanded_command.get_parent().move_child(expanded_command, i - 1)
+			actions.get_parent().move_child(actions, i)
+			saved_commands[i] = saved_commands[i - 1]
+			saved_commands[i - 1] = expanded_command
+	)
+	actions.get_node(^"MoveDown").pressed.connect(func() -> void:
+		var i := saved_commands.find(expanded_command)
+		if i < saved_commands.size() - 1:
+			actions.get_parent().move_child(actions, i + 2)
+			expanded_command.get_parent().move_child(expanded_command, i + 1)
+			saved_commands[i] = saved_commands[i + 1]
+			saved_commands[i + 1] = expanded_command
+	)
+	actions.get_node(^"Load").pressed.connect(func() -> void:
+		code_edit.text = expanded_command.code
+		saved_button.button_pressed = false
+	)
+	actions.get_node(^"Delete").pressed.connect(func() -> void:
+		if expanded_command.is_deleted:
+			expanded_command.is_deleted = false
+			expanded_command.line_edit.editable = true
+			expanded_command.run_button.disabled = false
+			actions.get_node(^"MoveUp").disabled = false
+			actions.get_node(^"MoveDown").disabled = false
+			actions.get_node(^"Load").disabled = false
+			actions.get_node(^"Delete").icon = dock.get_theme_icon(&"Remove", &"EditorIcons")
+			actions.get_node(^"Delete").tooltip_text = "Delete"
+		else:
+			expanded_command.is_deleted = true
+			expanded_command.line_edit.editable = false
+			expanded_command.run_button.disabled = true
+			actions.get_node(^"MoveUp").disabled = true
+			actions.get_node(^"MoveDown").disabled = true
+			actions.get_node(^"Load").disabled = true
+			actions.get_node(^"Delete").icon = dock.get_theme_icon(
+					# UndoRedo icon was added in 4.2 (GH-80102)
+					&"UndoRedo" if Engine.get_version_info().hex >= 0x040200
+					else &"RotateLeft", &"EditorIcons")
+			actions.get_node(^"Delete").tooltip_text = "Undo"
 	)
 	
 	## Calls [method set] with the arguments reversed.
@@ -313,12 +368,10 @@ func _exit_tree() -> void:
 	#region Save data
 	var config := ConfigFile.new()
 	config.set_value("data", "command", code_edit.text)
-	var saved_commands := []
-	for command in dock.get_node(
-			^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer"
-			).get_children() as Array[SavedCommand]:
-		saved_commands.append([command.line_edit.text, command.code])
-	config.set_value("data", "saved_commands", saved_commands)
+	var commands := []
+	for command in saved_commands:
+		commands.append([command.line_edit.text, command.code])
+	config.set_value("data", "saved_commands", commands)
 	config.set_value("data", "is_in_bottom", _is_in_bottom_panel)
 	
 	config.set_value("settings", "clear_on_run", _clear_on_run)
@@ -450,9 +503,7 @@ func run(code: String, is_saved_command := false) -> void:
 	
 	# Add prefix if one exists
 	var prefix: String
-	for command in dock.get_node(
-			^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer"
-			).get_children() as Array[SavedCommand]:
+	for command in saved_commands:
 		if command.line_edit.text == "Prefix":
 			prefix = command.code
 			break
@@ -486,11 +537,11 @@ func run(code: String, is_saved_command := false) -> void:
 func add_saved_command(title: String, code: String) -> void:
 	var command := SavedCommand.new(title)
 	command.code = code
+	command.menu_button.button_group = saved_command_button_group
 	command.run_button.pressed.connect(run.bind(code, true))
-	command.load_button.pressed.connect(code_edit.set.bind(&"text", code))
-	# Close saved commands panel when loading a command
-	command.load_button.pressed.connect(saved_button.set.bind(&"button_pressed", false))
-	dock.get_node(^"Control/Saved/VBoxContainer/ScrollContainer/VBoxContainer").add_child(command)
+	command.menu_button.toggled.connect(_on_saved_command_menu_button_toggled.bind(command))
+	actions.get_parent().add_child(command)
+	saved_commands.append(command)
 
 
 ## Sets the plugin dock tab icon after coloring it to match the editor's theme.
@@ -524,6 +575,11 @@ func update_theme() -> void:
 	run_button.get_child(0).self_modulate = dock.get_theme_color(&"accent_color", &"Editor")
 	bottom_button.icon = dock.get_theme_icon(&"ControlAlignBottomWide", &"EditorIcons")
 	
+	actions.get_node(^"MoveUp").icon = dock.get_theme_icon(&"MoveUp", &"EditorIcons")
+	actions.get_node(^"MoveDown").icon = dock.get_theme_icon(&"MoveDown", &"EditorIcons")
+	actions.get_node(^"Load").icon = dock.get_theme_icon(&"Load", &"EditorIcons")
+	actions.get_node(^"Delete").icon = dock.get_theme_icon(&"Remove", &"EditorIcons")
+	
 	# Adjust CodeEdit based on user's script editor settings
 	var editor_settings := editor_interface.get_editor_settings()
 	code_edit.caret_type = editor_settings.get_setting(
@@ -554,6 +610,31 @@ func update_theme() -> void:
 			editor_settings.get_setting("text_editor/theme/highlighting/caret_color"))
 	
 	update_dock_tab_icon()
+
+
+func _on_saved_command_menu_button_toggled(toggled_on: bool, command: SavedCommand) -> void:
+	if toggled_on:
+		if command.is_deleted:
+			actions.get_node(^"MoveUp").disabled = true
+			actions.get_node(^"MoveDown").disabled = true
+			actions.get_node(^"Load").disabled = true
+			actions.get_node(^"Delete").icon = dock.get_theme_icon(
+					# UndoRedo icon was added in 4.2 (GH-80102)
+					&"UndoRedo" if Engine.get_version_info().hex >= 0x040200
+					else &"RotateLeft", &"EditorIcons")
+			actions.get_node(^"Delete").tooltip_text = "Undo"
+		else:
+			actions.get_node(^"MoveUp").disabled = false
+			actions.get_node(^"MoveDown").disabled = false
+			actions.get_node(^"Load").disabled = false
+			actions.get_node(^"Delete").icon = dock.get_theme_icon(&"Remove", &"EditorIcons")
+			actions.get_node(^"Delete").tooltip_text = "Delete"
+		actions.get_parent().move_child(actions, saved_commands.find(command) + 1)
+		actions.show()
+		expanded_command = command
+	elif command == expanded_command:
+		actions.hide()
+		expanded_command = null
 
 
 func _on_move_to_bottom_toggled(toggled_on: bool) -> void:
@@ -591,10 +672,8 @@ class SavedCommand:
 	var line_edit := LineEdit.new()
 	## The [Button] that will run the command when pressed.
 	var run_button := Button.new()
-	## The [Button] that will load the command into the main [CodeEdit] when pressed.
-	var load_button := Button.new()
-	## The [Button] that will mark the command as deleted when pressed.
-	var delete_button := Button.new()
+	## The [Button] that will open the actions menu.
+	var menu_button := Button.new()
 	
 	## The command's code.
 	var code: String
@@ -609,13 +688,11 @@ class SavedCommand:
 		line_edit.text = title
 		line_edit.tooltip_text = title
 		add_child(line_edit)
-		run_button.tooltip_text = "Run this command."
+		run_button.tooltip_text = "Run"
 		add_child(run_button)
-		load_button.tooltip_text = "Load this command into CodeEdit.\nExisting code will be cleared."
-		add_child(load_button)
-		delete_button.tooltip_text = "Delete this command."
-		delete_button.pressed.connect(_on_delete_pressed)
-		add_child(delete_button)
+		menu_button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
+		menu_button.toggle_mode = true
+		add_child(menu_button)
 		
 		line_edit.text_changed.connect(_on_line_edit_text_changed)
 		theme_changed.connect(update_icons)
@@ -623,26 +700,8 @@ class SavedCommand:
 	
 	func update_icons() -> void:
 		run_button.icon = get_theme_icon(&"Play", &"EditorIcons")
-		load_button.icon = get_theme_icon(&"Load", &"EditorIcons")
-		delete_button.icon = get_theme_icon(&"Remove", &"EditorIcons")
+		menu_button.icon = get_theme_icon(&"GuiTabMenuHl", &"EditorIcons")
 	
 	
 	func _on_line_edit_text_changed(new_text: String) -> void:
 		line_edit.tooltip_text = new_text
-	
-	
-	func _on_delete_pressed() -> void:
-		if is_deleted:
-			is_deleted = false
-			line_edit.editable = true
-			run_button.disabled = false
-			load_button.disabled = false
-			delete_button.icon = get_theme_icon(&"Remove", &"EditorIcons")
-			delete_button.tooltip_text = "Delete this command."
-		else:
-			is_deleted = true
-			line_edit.editable = false
-			run_button.disabled = true
-			load_button.disabled = true
-			delete_button.icon = get_theme_icon(&"UndoRedo", &"EditorIcons")
-			delete_button.tooltip_text = "Recover this command."
