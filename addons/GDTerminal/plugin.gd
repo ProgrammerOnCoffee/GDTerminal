@@ -607,6 +607,7 @@ class SavedCommand:
 		line_edit.placeholder_text = "Command Name"
 		line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		line_edit.text = title
+		line_edit.tooltip_text = title
 		add_child(line_edit)
 		run_button.tooltip_text = "Run this command."
 		add_child(run_button)
@@ -616,6 +617,7 @@ class SavedCommand:
 		delete_button.pressed.connect(_on_delete_pressed)
 		add_child(delete_button)
 		
+		line_edit.text_changed.connect(_on_line_edit_text_changed)
 		theme_changed.connect(update_icons)
 	
 	
@@ -623,6 +625,10 @@ class SavedCommand:
 		run_button.icon = get_theme_icon(&"Play", &"EditorIcons")
 		load_button.icon = get_theme_icon(&"Load", &"EditorIcons")
 		delete_button.icon = get_theme_icon(&"Remove", &"EditorIcons")
+	
+	
+	func _on_line_edit_text_changed(new_text: String) -> void:
+		line_edit.tooltip_text = new_text
 	
 	
 	func _on_delete_pressed() -> void:
