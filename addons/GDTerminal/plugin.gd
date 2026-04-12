@@ -516,7 +516,7 @@ func run(code: String, is_saved_command := false) -> void:
 	if _print_execution_time:
 		script.source_code += '\n\tvar _command_end_time := Time.get_ticks_usec()\n\tprint("\\n--- Execution Time: %s ms ---\\n" % String.num((_command_end_time - _command_begin_time) * 0.001, 3).pad_decimals(3))'
 	if _save_scene:
-		script.source_code += "\n\tEditorInterface.save_scene()"
+		script.source_code += "\n\t" + ("EditorInterface" if Engine.get_version_info().hex >= 0x040200 else "get_editor_interface()") + ".save_scene()"
 	script.source_code += "\n\tqueue_free()"
 	script.reload()
 	#endregion Create script
