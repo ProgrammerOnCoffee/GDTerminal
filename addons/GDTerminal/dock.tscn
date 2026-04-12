@@ -120,9 +120,9 @@ layout_mode = 2
 tooltip_text = "The hotkey to run code.
 
 To change:
-1. Press the button
-2. Press the new key(s)
-3. Move your mouse outside of the button."
+1. Press the setting button
+2. Press new key(s) you want to bind run to
+3. Move your mouse outside of the button"
 theme_override_constants/separation = 0
 
 [node name="LSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/RunHotkey" unique_id=1888582723]
@@ -149,7 +149,8 @@ size_flags_horizontal = 8
 [node name="ExpandFactor" type="HBoxContainer" parent="Control/Settings/ScrollContainer/VBoxContainer" unique_id=895591288]
 layout_mode = 2
 tooltip_text = "How much the CodeEdit will be
-expanded when expand is toggled."
+expanded when expand is toggled,
+as a multiple of its normal width."
 theme_override_constants/separation = 0
 
 [node name="LSpacer" type="Control" parent="Control/Settings/ScrollContainer/VBoxContainer/ExpandFactor" unique_id=1935425202]
@@ -276,10 +277,9 @@ layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Runs the code currently in the CodeEdit.
 
-If a scene is not open, the code will be attatched
-to a new node parented to the scene root.
-If a scene is open, the code will be attatched
-to a new node parented to the editor's SceneTree."
+The created script will be attatched to a new
+node parented to the open scene's root, or to
+the editor's SceneTree if no scene is open."
 shortcut = SubResource("Shortcut_ab7yo")
 text = "Run"
 
